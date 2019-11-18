@@ -1,12 +1,12 @@
 var createError = require('http-errors');
 var express = require('express');
 
-
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session')
 const redis = require('redis')
+const fs = require('fs')
 let RedisStore = require('connect-redis')(session)
 
 
@@ -21,7 +21,21 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev')); //日志
+
+const env = process.env.NODE_ENV || 'dev'
+
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'logs', 'access.log'), {
+  flags: 'a'
+})
+
+app.use(logger('combined', {
+  stream: accessLogStream
+}))
+
+
+
+
+
 app.use(express.json()); //相当于getPostData，返回promise处理，在路由中可以通过req.body获取post的数据
 app.use(express.urlencoded({
   extended: false
